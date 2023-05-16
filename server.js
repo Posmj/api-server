@@ -1,26 +1,54 @@
-const config = require('./config')[process.env.NODE_ENV];
-const express = require('express');
-const http = require('http');
+const config = require("./config")[process.env.NODE_ENV];
+const express = require("express");
+const http = require("http");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const port = config.PORT;
-const cors = require('cors');
+// const router = express.Router();
+const cors = require("cors");
+
+// router.get('/',(req,res)=>{
+//     res.json({
+//         status : 200,
+//         data: 'success',
+//     })
+// })
 
 //cors
-let corsOptions = {
-	origin: '*', // 출처 허용 옵션
-	credential: true, // 사용자 인증이 필요한 리소스(쿠키 ..등) 접근
+const corsOptions = {
+  origin: "http://localhost:8080", // 출처 허용 옵션
+  // origin: '*', // 출처 허용 옵션
+  credentials: true, // 사용자 인증이 필요한 리소스(쿠키 ..등) 접근
+  // optionsSuccessStatus: 200,
+  // allowedHeaders:[ 'Content-Type', 'Authorization'],
+  // "preflightContinue": false,
 };
+// const corsOptions = {
+//   origin: ["http://localhost:8181"],
+//   credentials: true, // some legacy browsers (IE11, various SmartTVs) choke on 204
+// };
 app.use(cors(corsOptions));
+
 //body parser
 app.use(express.json());
-app.use(express.urlencoded({extended : true }));
+app.use(express.urlencoded({ extended: true }));
+
 //autoRouter
-const autoRoute = require('./autoRoute');
-autoRoute('/api',app);
+const autoRoute = require("./autoRoute");
+autoRoute("/api", app);
+
+// global settings
+global.UPLOAD_PATH = path.join("upload/");
+global.MEMBER_PHOTO_PATH = path.join("upload/memberPhoto");
+fs.mkdirSync(MEMBER_PHOTO_PATH, { recursive: true }); // 하위까지 모두만듦
+
+// image storage
+app.use("/upload/memberPhoto", express.static("upload/memberPhoto"));
 
 //server
 const webServer = http.createServer(app);
-webServer.listen(port,()=>{
-    console.log(`http://localhost:${port}`);
-})
+webServer.listen(port, () => {
+  console.log(`http://localhost:${port}`);
+});
